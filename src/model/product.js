@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const productSchema = mongoose.Schema({
-    imageStrin: {
+    imageString: {
         type: String,
     },
     name: {
@@ -18,6 +18,9 @@ const productSchema = mongoose.Schema({
     },
     category: {
         type: String,
+    },
+    itemNo: {
+        type: int,
     }
 })
 
