@@ -60,14 +60,14 @@ app.delete('/products/deleteAll', async (req, res) => {
     }
 })
 
-app.patch('/products/update/:name', async (req, res) => {
-    const name = req.params.name;
+app.patch('/products/update/:itemNo', async (req, res) => {
+    const itemNo = req.params.itemNo;
 
     const updateKeys = Object.keys(req.body)
     const allowedKeys = ['name', 'description', 'price', 'category', 'imageString'];
 
     try {
-        var product = await Product.findOne({ name: name });
+        var product = await Product.findOne({ itemNo: parseInt(itemNo) });
         if (product == null) {
             res.send('no such product');
             return

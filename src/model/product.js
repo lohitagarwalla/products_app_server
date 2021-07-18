@@ -7,7 +7,6 @@ const productSchema = mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true
     },
     description: {
         type: String,
@@ -21,6 +20,7 @@ const productSchema = mongoose.Schema({
     },
     itemNo: {
         type: Number,
+        unique: true
     }
 })
 
