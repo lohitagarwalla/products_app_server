@@ -1,6 +1,9 @@
 const express = require('express')
 require('./src/db/mongoose')
 const Product = require('./src/model/product')
+const bcrypt = require('bcrypt')
+const User = require('./src/model/user')
+const {generateToken, verifyToken} = require('./src/utility/webTokens')
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -9,8 +12,62 @@ const port = process.env.PORT || 3000
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb' }));
 
+const user_already_exist = 900
+const no_such_user = 901
+const login_unsuccessfull = 902
+
 app.get('/', (req, res) => {
     res.send('Hello world')
+})
+
+// create new user
+app.post('/users/create', async (req, res) => {
+    const name = req.body.name
+    const email = req.body.email
+    const pass = req.body.pass
+    
+    try {
+        var user = await User.find({email: email})
+        if(user.length != 0) {
+            return res.status(user_already_exist).send('User already exist')
+        }
+
+        hashPass = await bcrypt.hash(pass, 8)
+
+        user = User({
+            ...req.body
+        })
+        user.hashPass = hashPass
+        user = await user.save()
+
+        const token = generateToken(email)
+
+        res.send(token)    
+    } catch (e) {
+        res.status(400).send('Error in creating user')
+    }
+})
+
+app.post('/users/login', async (req, res) => {
+    email = req.body.email
+    givenPass = req.body.pass
+
+    try {
+        const user = await User.find({email: email})
+        console.log(user)
+        if(user.length == 0) {
+            res.status(no_such_user).send('No such user')
+        }
+        const result = await bcrypt.compare(givenPass, user[0].hashPass)
+        if(result == false) {
+            return res.status(login_unsuccessfull).send('Login unsuccessfull')
+        }
+
+        const token = generateToken(email)
+        res.send(token)
+    } catch (e) {
+        res.status(400).send('error occured in login')
+    }
 })
 
 app.get('/products/get', async (req, res) => {
