@@ -12,9 +12,13 @@ const port = process.env.PORT || 3000
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb' }));
 
+const server_error_occured = 500
+
 const user_already_exist = 900
 const no_such_user = 901
 const login_unsuccessfull = 902
+
+const no_such_product = 801
 
 app.get('/', (req, res) => {
     res.send('Hello world')
@@ -114,6 +118,20 @@ app.delete('/products/deleteAll', async (req, res) => {
         res.status(200).send('Deleted all products')
     } catch (e) {
         res.send(400).send('issue in deleting all products')
+    }
+})
+
+app.delete('/products/delete/:itemNo', async (req, res) => {
+    const itemNo = req.params.itemNo
+
+    try {
+        const product = await Product.deleteOne({itemNo: itemNo})
+        if(product == null) {
+            return res.status(no_such_product).send('no_such_product')
+        }
+        return res.send('Product deleted successfully')
+    } catch (e) {
+        res.status(server_error_occured).send('server_error_occured')
     }
 })
 
