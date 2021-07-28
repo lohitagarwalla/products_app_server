@@ -3,7 +3,8 @@ require('./src/db/mongoose')
 const Product = require('./src/model/product')
 const bcrypt = require('bcrypt')
 const User = require('./src/model/user')
-const {generateToken, verifyToken} = require('./src/utility/webTokens')
+const { generateToken, verifyToken } = require('./src/utility/webTokens')
+const ItemNo = require('./src/model/itemNo')
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -29,10 +30,10 @@ app.post('/users/create', async (req, res) => {
     const name = req.body.name
     const email = req.body.email
     const pass = req.body.pass
-    
+
     try {
-        var user = await User.find({email: email})
-        if(user.length != 0) {
+        var user = await User.find({ email: email })
+        if (user.length != 0) {
             return res.status(user_already_exist).send('User already exist')
         }
 
@@ -46,7 +47,7 @@ app.post('/users/create', async (req, res) => {
 
         const token = generateToken(email)
 
-        res.send(token)    
+        res.send(token)
     } catch (e) {
         res.status(400).send('Error in creating user')
     }
@@ -57,13 +58,13 @@ app.post('/users/login', async (req, res) => {
     givenPass = req.body.pass
 
     try {
-        const user = await User.find({email: email})
+        const user = await User.find({ email: email })
         console.log(user)
-        if(user.length == 0) {
+        if (user.length == 0) {
             res.status(no_such_user).send('No such user')
         }
         const result = await bcrypt.compare(givenPass, user[0].hashPass)
-        if(result == false) {
+        if (result == false) {
             return res.status(login_unsuccessfull).send('Login unsuccessfull')
         }
 
@@ -102,8 +103,18 @@ app.get('/products/search/:searchterm', async (req, res) => {
 // create new product
 app.post('/products/create', async (req, res) => {
     const prod = Product({ ...req.body })
+
     try {
+        var itemArr = await ItemNo.find({})
+        var item = itemArr[0]
+
+        item.itemNo++
+        const newItemNo = item.itemNo
+        prod.itemNo = newItemNo
+
         await prod.save()
+        await item.save()
+
         res.status(200).send(prod)
     } catch (e) {
         console.log('error in creating new product')
@@ -125,8 +136,8 @@ app.delete('/products/delete/:itemNo', async (req, res) => {
     const itemNo = req.params.itemNo
 
     try {
-        const product = await Product.deleteOne({itemNo: itemNo})
-        if(product == null) {
+        const product = await Product.deleteOne({ itemNo: itemNo })
+        if (product == null) {
             return res.status(no_such_product).send('no_such_product')
         }
         return res.send('Product deleted successfully')
