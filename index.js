@@ -100,6 +100,18 @@ app.get('/products/search/:searchterm', async (req, res) => {
     }
 })
 
+app.get('/products/searchcategory/:category', async (req, res) => {
+    const category = req.params.category
+    console.log(category)
+
+    try {
+        var products = await Product.find({category: category})
+        res.send(products)
+    } catch (e) {
+        res.send(500).send('Issue in serching product according to category')
+    }
+})
+
 // create new product
 app.post('/products/create', async (req, res) => {
     const prod = Product({ ...req.body })
