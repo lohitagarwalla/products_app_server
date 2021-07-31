@@ -76,9 +76,13 @@ app.post('/users/login', async (req, res) => {
 })
 
 app.get('/products/get', async (req, res) => {
+    var skipUpTo = req.query.skip
+    if(skipUpTo == undefined) skipUpTo = 0
+    skipUpTo = parseInt(skipUpTo)
+
     try {
-        const products = await Product.find({})
-        res.send(products)
+        const products = await Product.find({}).limit(10).skip(skipUpTo)
+        res.send({length: products.length, products: products})
     } catch (e) {
         res.status(400).send(e)
         console.log('error in getting product')
@@ -93,7 +97,7 @@ app.get('/products/search/:searchterm', async (req, res) => {
     })
 
     try {
-        const products = await Product.find().or(searcharray).limit(20)
+        const products = await Product.find().or(searcharray).limit(10)
         res.send(products)
     } catch (e) {
         res.status(400).send('Issue occured in searching')
