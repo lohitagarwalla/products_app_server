@@ -82,7 +82,7 @@ app.get('/products/get', async (req, res) => {
 
     try {
         const products = await Product.find({}).limit(10).skip(skipUpTo)
-        res.send({length: products.length, products: products})
+        res.send(products)
     } catch (e) {
         res.status(400).send(e)
         console.log('error in getting product')
