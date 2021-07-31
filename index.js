@@ -96,8 +96,12 @@ app.get('/products/search/:searchterm', async (req, res) => {
         return { name: new RegExp(term, 'i') }
     })
 
+    var skipUpTo = req.query.skip
+    if(skipUpTo == undefined) skipUpTo = 0
+    skipUpTo = parseInt(skipUpTo)
+
     try {
-        const products = await Product.find().or(searcharray).limit(10)
+        const products = await Product.find().or(searcharray).limit(10).skip(skipUpTo)
         res.send(products)
     } catch (e) {
         res.status(400).send('Issue occured in searching')
@@ -108,8 +112,12 @@ app.get('/products/searchcategory/:category', async (req, res) => {
     const category = req.params.category
     console.log(category)
 
+    var skipUpTo = req.query.skip
+    if(skipUpTo == undefined) skipUpTo = 0
+    skipUpTo = parseInt(skipUpTo)
+
     try {
-        var products = await Product.find({category: category})
+        var products = await Product.find({category: category}).limit(10).skip(skipUpTo)
         res.send(products)
     } catch (e) {
         res.send(500).send('Issue in serching product according to category')
@@ -141,7 +149,7 @@ app.post('/products/create', async (req, res) => {
 //delete all products
 app.delete('/products/deleteAll', async (req, res) => {
     try {
-        await Product.deleteMany({})
+        // await Product.deleteMany({})
         res.status(200).send('Deleted all products')
     } catch (e) {
         res.send(400).send('issue in deleting all products')
@@ -186,9 +194,6 @@ app.patch('/products/update/:itemNo', async (req, res) => {
         res.status(201).send('Error in server. Cannot update product')
     }
 })
-
-//update existing product
-app.patch('/products/edit')
 
 app.listen(port, () => {
     console.log('app running on port', port)
